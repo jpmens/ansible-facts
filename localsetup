@@ -1,0 +1,96 @@
+#!/usr/bin/env python
+# (c) 2012, Jan-Piet Mens <jpmens () gmail.com>
+#
+# Example Ansible "setup" module for gathering local facts.
+
+import sys
+import os
+import shlex
+import syslog
+import subprocess
+
+try:
+  import json
+except ImportError:
+  import simplejson as json
+
+# Standard Ansible support methods
+
+def exit_json(rc=0, **kwargs):
+	print json.dumps(kwargs)
+	sys.exit(rc)
+
+def fail_json(**kwargs):
+	kwargs['failed'] = True
+	exit_json(rc=1, **kwargs)
+
+# Standard Ansible argument-parsing code
+
+if len(sys.argv) == 1:
+	fail_json(msg="the %s module requires arguments (-a)" % os.path.basename(__file__))
+
+argfile = sys.argv[1]
+if not os.path.exists(argfile):
+	fail_json(msg="argument file not found")
+
+args = open(argfile, 'r').read()
+items = shlex.split(args)
+syslog.openlog("ansible-%s" % os.path.basename(__file__))
+syslog.syslog(syslog.LOG_NOTICE, "Invoked with %s" % args)
+
+params = {}
+
+# Set defaults which may be overwritten by module args
+
+params['klist'] = 'klist'
+params['keytab'] = '/etc/krb5.keytab'
+
+for x in items:
+	(k,v) = x.split('=')
+	params[k] = v
+
+# Module code
+
+def keytab_princs():
+
+	princs = {}
+
+	klist = [
+		params['klist'],
+		'-k',
+		params['keytab'] ]
+	try:
+		proc = subprocess.Popen(klist,
+			stdout=subprocess.PIPE,
+			stderr=open('/dev/null', 'w'))
+		lines = proc.stdout.readlines()
+		for l in lines[3:]:	# skip headers
+			principal = l.split()[1]
+			princs[principal] = 1
+	except OSError:
+		return None
+	
+	return princs.keys()
+
+def sysinfo(file='/etc/sysinfo'):
+	info = {}
+
+	if os.path.exists(file):
+		lines = open(file, 'r').readlines()
+		for l in lines:
+			(k,v) = l.rstrip().split(':')
+			info[k.strip()] = v.strip()
+	return info
+
+facts = {}
+
+facts['year'] = 2006
+facts['tmpfiles'] = len([name for name in os.listdir('/tmp/')])
+facts['keytab'] = params['keytab']
+facts['kerberos_keytab_princs'] = keytab_princs()
+facts['sysinfo'] = sysinfo()
+
+result = {}
+result['ansible_facts'] = facts
+
+print json.dumps(result, sort_keys=False, indent=4)

@@ -1,0 +1,11 @@
+{% if sysinfo.syscontact is defined -%}
+The manager hereabouts is {{ sysinfo.syscontact }} <{{sysinfo.sysemail}}>
+{% endif -%}
+Currently {{tmpfiles}} files in /tmp
+
+Kerberos information for {{ ansible_fqdn }}:
+	keytab name: {{ keytab }}
+	principals:
+		{% for p in kerberos_keytab_princs -%}
+		-> {{ p }}
+		{% endfor -%}

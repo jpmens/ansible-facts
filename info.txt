@@ -1,0 +1,9 @@
+The manager hereabouts is Jane Jolie <janej@example.com>
+Currently 23 files in /tmp
+
+Kerberos information for a1.ww.mens.de:
+	keytab name: /etc/krb5.keytab
+	principals:
+		-> host/a1.ww.mens.de@MENS.DE
+		-> service/wallet@MENS.DE
+		

@@ -1,0 +1,9 @@
+---
+- hosts: 127.0.0.1
+  connection: local
+  tasks:
+  - name: Gather our facts
+    action: localsetup keytab=/etc/krb5.keytab
+  - name: Demotemplate
+    action: template src=info.in dest=/tmp/info.txt
+
