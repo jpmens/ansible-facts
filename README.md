@@ -3,8 +3,6 @@
 
 ![Ansible Facts](https://github.com/jpmens/ansible-facts/raw/master/ansible-facts-local.png)
 
-![Ansible Facts](raw/master/ansible-facts-local.png)
-
 
 1. Copy `localsetup` to your ansible `library/` directory
 2. Invoke `localsetup` as module in playbook
